@@ -2,6 +2,7 @@
 #in order to create reference panel for deconvolution using CIBERSORTx
 
 library(tidyverse)
+setwd("/project/tendonhca/ccohen/CIBERSORTx/ankspond")
 
 
 ### Step 1: Get the COMBAT rds object ###
@@ -99,7 +100,6 @@ generate_matrix <- function(rds, annotation){
         as.data.frame()
     #put the annotation as the colname, and put gene names back as first column
     colnames(matrix_t) <- matrix_t[1,]
-    # should add a step here to convert NA to "NA"
     matrix_t <- matrix_t[-1,] %>% 
         rownames_to_column(var = "GeneSymbol")
     print(matrix_t[1:10, 1:10])
@@ -147,43 +147,76 @@ write.table(CD4_pseudobulk_subset, "CD4_pseudobulk_subset.txt",
             quote = FALSE, sep = "\t", row.names = FALSE)
 
 
-### fixing errors in CD8 pseudobulk
+### Step 5: Read in these outputs to continue formatting the data ###
 
-counts <- rds_CD8@assays$RNA@counts %>% as.matrix()
-print(counts[1:10, 1:10])
-#transpose & convert to df
-counts_t <- t(counts) %>% 
+CD4_matrix_pseudobulk <- read.table("CD4_matrix_pseudobulk.txt", row.names = 1, sep = "\t", header = TRUE)
+CD4_matrix_fine <- read.table("CD4_matrix_fine.txt", row.names = 1, sep = "\t", header = TRUE)
+CD8_matrix_pseudobulk <- read.table("CD8_matrix_pseudobulk.txt", row.names = 1, sep = "\t", header = TRUE)
+CD8_matrix_fine <- read.table("CD8_matrix_fine.txt", row.names = 1, sep = "\t", header = TRUE)
+cMono_matrix_pseudobulk <- read.table("cMono_matrix_pseudobulk.txt", row.names = 1, sep = "\t", header = TRUE)
+cMono_matrix_fine <- read.table("cMono_matrix_fine.txt", row.names = 1, sep = "\t", header = TRUE)
+MNP_matrix_pseudobulk <- read.table("MNP_matrix_pseudobulk.txt", row.names = 1, sep = "\t", header = TRUE)
+MNP_matrix_fine <- read.table("MNP_matrix_fine.txt", row.names = 1, sep = "\t", header = TRUE)
+
+CD8_matrix_pseudobulk_test <- CD8_matrix_pseudobulk[1:100, 1:800]
+
+#create a function
+cleanup_matrix <- function (matrix){
+    # convert "." to "_" in colnames
+    colnames(matrix) <- colnames(matrix) %>% str_replace_all("\\.(\\D)", "_\\1")
+    print(head(colnames(matrix)))
+    
+    # remove any columns with "NA"
+    print("dimensions before NA removal")
+    print(dim(matrix))
+    matrix_2 <- matrix %>% select(!starts_with("NA"))
+    print("dimensions after NA removal")
+    print(dim(matrix_2))
+    
+    # remove any rows that sum to zero
+    matrix_2 <- matrix_2 %>% slice (-which(rowSums(matrix_2) == 0))
+    print("dimensions following removal of rows that sum to zero")
+    print(dim(matrix_2))
+    
+    # convert colnames to row 1
+    matrix_2 <- matrix_2 %>% rownames_to_column(var = "GeneSymbol")
+    print(matrix_2[1:10, 1:10])
+    
+    return(matrix_2)
+}
+
+test <- cleanup_matrix(CD8_matrix_pseudobulk_test)
+CD8_matrix_pseudobulk_clean <- cleanup_matrix(CD8_matrix_pseudobulk)
+
+#how many columns are there for each cell type?
+celltypes <- colnames (CD8_matrix_pseudobulk_clean) %>% 
+    str_split_fixed("\\.", n=2) %>%
     as.data.frame() %>%
-    rownames_to_column(var = "barcode")
-print(counts_t[1:10, 1:10])
-#extract annotations from metadata
-metadata <- rds_CD8[[]] %>% 
-    select(MM_annot_pseudobulk) %>%
-    rownames_to_column(var = "barcode")
-#join the two df
-matrix <- counts_t %>%
-    left_join(metadata, by = "barcode") %>%
-    select(MM_annot_pseudobulk, 2:length(counts_t))
-print(matrix [1:10, 1:10])
-#transpose back
-matrix_t <- t(matrix) %>% 
-    as.data.frame()
-matrix_t[1:10, 1:10]
-dim(matrix_t)
-#put the annotation as the colname, and put gene names back as first column
-colnames(matrix_t) <- matrix_t[1,]
-matrix_t2 <- matrix_t[-1,] 
-matrix_t2[1:10, 1:10]
-test <- matrix_t %>% rownames_to_column(var = "GeneSymbol")
-# this throws an error because there is a column called "NA"
-which(is.na(colnames(matrix_t2))) # shows the empty column name is at position 600
-length(matrix_t2) # there are 15745 columns
-#rename column 600 to "NA"
-colnames(matrix_t2)[600] <- "NA" 
-#convert rownames to column
-matrix_t3 <- matrix_t2 %>% rownames_to_column(var = "GeneSymbol")
-dim(matrix_t3)
-print(matrix_t3[1:10, 1:10])
+    select(V1)%>%
+    unique() %>%
+    slice_tail(n=9)
 
-write.table(matrix_t3, "CD8_matrix_pseudobulk.txt", 
-            quote = FALSE, sep = "\t", row.names = FALSE)
+celltypes # there are 9 cell types
+
+column_names <- colnames (CD8_matrix_pseudobulk_clean) %>% 
+    str_split_fixed("\\.", n=2) %>%
+    as.data.frame() %>%
+    select(V1) 
+column_names <- column_names[-1,]
+
+
+for (i in seq(1:nrow(celltypes))){
+    celltype <- celltypes[i,]
+    print(celltype)
+    regex <- paste0("^", celltype, "$")
+    #print(regex)
+    length <- grep (regex, column_names) %>% length()
+    print(length)
+    i <- i+1
+}
+
+#distribution of cell types is very variable
+# no further subsetting at this point
+
+dir.create("clean_matrices", showWarnings = FALSE)
+write.table (CD8_matrix_pseudobulk_clean, "./clean_matrices/CD8_matrix_pseudobulk.txt", sep = "\t", quote = FALSE, row.names = FALSE)
