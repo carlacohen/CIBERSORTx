@@ -141,6 +141,10 @@ write.table(MNP_matrix_pseudobulk, "MNP_matrix_pseudobulk.txt",
             quote = FALSE, sep = "\t", row.names = FALSE)
 write.table(MNP_matrix_fine, "MNP_matrix_fine.txt", 
             quote = FALSE, sep = "\t", row.names = FALSE)
+write.table(CD14_matrix_pseudobulk, "CD14_matrix_pseudobulk.txt", 
+            quote = FALSE, sep = "\t", row.names = FALSE)
+write.table(CD14_matrix_fine, "CD14_matrix_fine.txt", 
+            quote = FALSE, sep = "\t", row.names = FALSE)
 
 # randomly select 10% of the cells for CD4 pseudobulk
 CD4_pseudobulk_subset <- CD4_matrix_pseudobulk[,sample(length(CD4_matrix_pseudobulk), length(CD4_matrix_pseudobulk)*0.1)]
@@ -162,6 +166,8 @@ cMono_matrix_pseudobulk <- read.table("cMono_matrix_pseudobulk.txt", row.names =
 cMono_matrix_fine <- read.table("cMono_matrix_fine.txt", row.names = 1, sep = "\t", header = TRUE)
 MNP_matrix_pseudobulk <- read.table("MNP_matrix_pseudobulk.txt", row.names = 1, sep = "\t", header = TRUE)
 MNP_matrix_fine <- read.table("MNP_matrix_fine.txt", row.names = 1, sep = "\t", header = TRUE)
+CD14_matrix_pseudobulk <- read.table("CD14_matrix_pseudobulk.txt", row.names = 1, sep = "\t", header = TRUE)
+CD14_matrix_fine <- read.table("CD14_matrix_fine.txt", row.names = 1, sep = "\t", header = TRUE)
 
 CD8_matrix_pseudobulk_test <- CD8_matrix_pseudobulk[1:100, 1:800]
 
@@ -195,6 +201,7 @@ CD8_matrix_pseudobulk_clean <- cleanup_matrix(CD8_matrix_pseudobulk)
 CD4_matrix_pseudobulk_clean <- cleanup_matrix(CD4_matrix_pseudobulk)
 cMono_matrix_pseudobulk_clean <- cleanup_matrix(cMono_matrix_pseudobulk)
 MNP_matrix_pseudobulk_clean <- cleanup_matrix(MNP_matrix_pseudobulk)
+CD14_matrix_pseudobulk_clean <- cleanup_matrix(CD14_matrix_pseudobulk)
 CD8_matrix_fine_clean <- cleanup_matrix(CD8_matrix_fine)
 CD4_matrix_fine_clean <- cleanup_matrix(CD4_matrix_fine)
 cMono_matrix_fine_clean <- cleanup_matrix(cMono_matrix_fine)
@@ -205,6 +212,7 @@ write.table (CD8_matrix_pseudobulk_clean, "./clean_matrices/CD8_matrix_pseudobul
 write.table (CD4_matrix_pseudobulk_clean, "./clean_matrices/CD4_matrix_pseudobulk.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 write.table (cMono_matrix_pseudobulk_clean, "./clean_matrices/cMono_matrix_pseudobulk.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 write.table (MNP_matrix_pseudobulk_clean, "./clean_matrices/MNP_matrix_pseudobulk.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table (CD14_matrix_pseudobulk_clean, "./clean_matrices/CD14_matrix_pseudobulk.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 write.table (cMono_matrix_fine_clean, "./clean_matrices/MNP_matrix_pseudobulk.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 
 #function to check how many columns of each cell type are present
@@ -245,6 +253,8 @@ celltypes_CD8_pseudobulk <- celltypes_count(CD8_matrix_pseudobulk_clean)
 celltypes_cMono_pseudobulk <- celltypes_count(cMono_matrix_pseudobulk_clean)
 #cMono_cyc 117
 celltypes_MNP_pseudobulk <- celltypes_count(MNP_matrix_pseudobulk_clean)
+#117
+celltypes_CD14_pseudobulk <- celltypes_count(CD14_matrix_pseudobulk_clean)
 #117
 celltypes_CD4_fine <- celltypes_count(CD4_matrix_fine_clean)
 #smallest subset is 2
@@ -312,6 +322,7 @@ CD8_matrix_pseudobulk_sample <- matrix_sample(CD8_matrix_pseudobulk)
 CD4_matrix_pseudobulk_sample <- matrix_sample(CD4_matrix_pseudobulk)
 cMono_matrix_pseudobulk_sample <- matrix_sample(cMono_matrix_pseudobulk)
 MNP_matrix_pseudobulk_sample <- matrix_sample(MNP_matrix_pseudobulk)
+CD14_matrix_pseudobulk_sample <- matrix_sample(CD14_matrix_pseudobulk)
 cMono_matrix_fine_sample <- matrix_sample(cMono_matrix_fine)
 
 #Remove celltype cMono_MKI67_RRM2_cyc from cMono_matrix_fine as there are only 2 columns
@@ -324,4 +335,5 @@ write.table (CD8_matrix_pseudobulk_sample, "./downsampled_matrices/CD8_matrix_ps
 write.table (CD4_matrix_pseudobulk_sample, "./downsampled_matrices/CD4_matrix_pseudobulk_sample.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 write.table (cMono_matrix_pseudobulk_sample, "./downsampled_matrices/cMono_matrix_pseudobulk_sample.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 write.table (MNP_matrix_pseudobulk_sample, "./downsampled_matrices/MNP_matrix_pseudobulk_sample.txt", sep = "\t", quote = FALSE, row.names = FALSE)
+write.table (CD14_matrix_pseudobulk_sample, "./downsampled_matrices/CD14_matrix_pseudobulk_sample.txt", sep = "\t", quote = FALSE, row.names = FALSE)
 write.table (cMono_matrix_fine_sample, "./downsampled_matrices/cMono_matrix_fine_sample.txt", sep = "\t", quote = FALSE, row.names = FALSE)
